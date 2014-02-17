@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+	    android:id ="@+id/bottom"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:minHeight="30dp" 
+	    android:layout_alignParentBottom="true">
+
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:background="#4c5558"
+	        android:orientation="horizontal"
+	        android:paddingBottom="6dp"
+	        android:paddingLeft="3dp"
+	        android:paddingRight="3dp"
+	        android:paddingTop="6dp" >
+
+	        <EditText
+	            android:id="@+id/edit_message"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="1"
+	            android:background="@drawable/edittext"
+	            android:hint="@string/edit_message"
+	            android:maxHeight="90dp"
+	            android:padding="10dp" />
+
+			<Button
+		        android:layout_width="wrap_content"
+		        android:layout_height="match_parent" 
+		        android:onClick="sendMessage"
+		        android:background="@drawable/send_btn"
+		     	/>
+	    </LinearLayout>
+	</RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottom"
+        android:orientation="horizontal"
+        android:paddingBottom="0dp"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:paddingTop="0dp" >
+
+    	<ListView
+    	    android:id="@+id/chat_list"
+    	    android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+    	    android:divider="@null"
+    	    android:dividerHeight="0dp"
+    	    android:paddingBottom="0dp"
+	        android:paddingLeft="2dp"
+	        android:paddingRight="2dp"
+	        android:paddingTop="0dp"
+    	    android:stackFromBottom="true"
+    	    android:transcriptMode="alwaysScroll" >
+    	    
+    	</ListView>
+  		
+    </LinearLayout>
+</RelativeLayout>

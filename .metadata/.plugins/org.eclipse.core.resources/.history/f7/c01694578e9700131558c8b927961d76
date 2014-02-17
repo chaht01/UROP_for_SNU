@@ -1,0 +1,188 @@
+package com.example.myfisrtapp;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+public class MainActivity extends Activity {
+	public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+	public ArrayList<String> array = new ArrayList<String>();
+	private ListView list;
+	private MySimpleArrayAdapter arrayAdapter;
+	private Socket socket;
+	private static final int SERVERPOT = 7777;
+	private static final String SERVER_IP = "121.254.170.12";
+	private String myname;
+	
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.chat_room);
+        
+        ActionBar actionbar = this.getActionBar();
+        //actionbar.setBackgroundDrawable(getResources().getColor(R.color.actionbar_color));
+        actionbar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#333a3d")));
+        //actionbar.setIcon(icon);
+        try{
+        	
+        	Thread receiver = new Thread(new ClientReceiver(socket));
+        	receiver.start();
+        }catch(ConnectException ce){
+        	ce.printStackTrace();
+        }catch(Exception e){
+        }
+        
+        list = (ListView)findViewById(R.id.chat_list);
+        //list.setVisibility(View.GONE);
+        arrayAdapter = new MySimpleArrayAdapter(this, array);
+        list.setAdapter(arrayAdapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    
+
+	/** Called when the user clicks the Send buttons*/
+    public void sendMessage(View view){
+    	/*
+    	EditText editText = (EditText) findViewById(R.id.edit_message);
+    	if(editText.getText().toString().equals("")){
+    	}else{
+    		array.add(editText.getText().toString());
+        	arrayAdapter.notifyDataSetChanged();
+    	}
+    	editText.setText("");
+    	*/
+    	Thread sender = new Thread(new ClientSender(socket,myname));
+    	sender.start();
+    }
+    public class MySimpleArrayAdapter extends ArrayAdapter<String> {
+    	  private final Context context;
+    	  private final ArrayList<String> values;
+
+    	  public MySimpleArrayAdapter(Context context, ArrayList<String> values) {
+    	    super(context, R.layout.chat_row, values);
+    	    this.context = context;
+    	    this.values = values;
+    	  }
+
+    	  @Override
+    	  public View getView(int position, View convertView, ViewGroup parent) {
+    	    LayoutInflater inflater = (LayoutInflater) context
+    	        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    	    View rowView = inflater.inflate(R.layout.chat_row, parent, false);
+    	    String s = values.get(position);
+    	    TextView textView_l=(TextView) rowView.findViewById(R.id.left);
+    	    TextView textView_r=(TextView) rowView.findViewById(R.id.right);
+    	    TextView time_l=(TextView) rowView.findViewById(R.id.left_time);
+    	    TextView time_r=(TextView) rowView.findViewById(R.id.right_time);
+    	    ImageView profile_l=(ImageView) rowView.findViewById(R.id.left_profile);
+    	    ImageView profile_r=(ImageView) rowView.findViewById(R.id.right_profile);
+    	    if(s.startsWith("1")){
+    	    	textView_l.setVisibility(View.VISIBLE);
+    	    	time_l.setVisibility(View.VISIBLE);
+    	    	profile_l.setVisibility(View.VISIBLE);
+    	    	textView_r.setVisibility(View.GONE);
+    	    	time_r.setVisibility(View.GONE);
+    	    	profile_r.setVisibility(View.GONE);
+    	    	textView_l.setText(values.get(position).substring(1,values.get(position).length()));
+    	    	time_l.setText(GetCurrTimeString());
+    	    }else{
+    	    	textView_r.setVisibility(View.VISIBLE);
+    	    	time_r.setVisibility(View.VISIBLE);
+    	    	profile_r.setVisibility(View.VISIBLE);
+    	    	textView_l.setVisibility(View.GONE);
+    	    	time_l.setVisibility(View.GONE);
+    	    	profile_l.setVisibility(View.GONE);
+    	    	textView_r.setText(values.get(position));
+    	    	time_r.setText(GetCurrTimeString());
+    	    }
+    
+    	    return rowView;
+    	  }
+    }
+    public static String GetCurrTimeString(){
+    	Calendar date = Calendar.getInstance(Locale.KOREA);
+    	SimpleDateFormat formator = new SimpleDateFormat("hh:mm",Locale.KOREA);
+    	String result = "";
+    	switch(date.get(Calendar.AM_PM)){
+    		case Calendar.AM : result = "오전 ";break;
+    		case Calendar.PM : result = "오후 ";break;
+    	}
+    	result = result+formator.format(date.getTime());
+    	return result;	
+    }
+    private class ClientSender extends Thread{
+    	Socket socket;
+    	DataOutputStream out;
+    	String name;
+    	ClientSender(Socket socket,String name){
+    		this.socket = socket;
+    		try{
+    			out = new DataOutputStream(socket.getOutputStream());
+    			this.name = name;
+    		}catch(Exception e){}
+    	}
+    	public void run(){
+    		try{
+    			out.writeUTF(myname);
+    			EditText editText = (EditText) findViewById(R.id.edit_message);
+    	    	if(editText.getText().toString().equals("")){
+    	    	}else{
+    	    		//array.add(editText.getText().toString());
+    	        	//arrayAdapter.notifyDataSetChanged();
+    	        	out.writeUTF(editText.getText().toString());
+    	    	}
+    	    	editText.setText("");
+    		}catch(IOException e){    			
+    		}
+    	}
+    }
+    private class ClientReceiver extends Thread{
+    	Socket socket;
+    	DataInputStream in;
+    	ClientReceiver(Socket socket){
+    		this.socket = socket;
+    		try{
+    			in = new DataInputStream(socket.getInputStream());
+    		}catch(IOException e){
+    		}
+    	}
+    	public void run(){
+    		while(in!=null){
+    			try{
+    				array.add(in.readUTF());
+    	        	arrayAdapter.notifyDataSetChanged();
+    			}catch(IOException e){
+    			}
+        	}    		
+    	}
+    }
+}

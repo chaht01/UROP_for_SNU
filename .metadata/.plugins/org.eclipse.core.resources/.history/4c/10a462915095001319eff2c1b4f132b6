@@ -1,0 +1,117 @@
+package com.example.myfisrtapp;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+public class MainActivity extends Activity {
+	public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+	public ArrayList<String> array = new ArrayList<String>();
+	private ListView list;
+	private MySimpleArrayAdapter arrayAdapter;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.chat_room);
+        
+        ActionBar actionbar = this.getActionBar();
+        actionbar.setBackgroundDrawable(d);
+        actionbar.setTitle(title);
+        actionbar.setIcon(icon);
+        
+        
+        list = (ListView)findViewById(R.id.chat_list);
+        //list.setVisibility(View.GONE);
+        arrayAdapter = new MySimpleArrayAdapter(this, array);
+        list.setAdapter(arrayAdapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    /** Called when the user clicks the Send buttons*/
+    public void sendMessage(View view){
+    	EditText editText = (EditText) findViewById(R.id.edit_message);
+    	if(editText.getText().toString().equals("")){
+    	}else{
+    		array.add(editText.getText().toString());
+        	arrayAdapter.notifyDataSetChanged();
+    	}
+    	editText.setText("");
+    }
+    public class MySimpleArrayAdapter extends ArrayAdapter<String> {
+    	  private final Context context;
+    	  private final ArrayList<String> values;
+
+    	  public MySimpleArrayAdapter(Context context, ArrayList<String> values) {
+    	    super(context, R.layout.chat_row, values);
+    	    this.context = context;
+    	    this.values = values;
+    	  }
+
+    	  @Override
+    	  public View getView(int position, View convertView, ViewGroup parent) {
+    	    LayoutInflater inflater = (LayoutInflater) context
+    	        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    	    View rowView = inflater.inflate(R.layout.chat_row, parent, false);
+    	    String s = values.get(position);
+    	    TextView textView_l=(TextView) rowView.findViewById(R.id.left);
+    	    TextView textView_r=(TextView) rowView.findViewById(R.id.right);
+    	    TextView time_l=(TextView) rowView.findViewById(R.id.left_time);
+    	    TextView time_r=(TextView) rowView.findViewById(R.id.right_time);
+    	    ImageView profile_l=(ImageView) rowView.findViewById(R.id.left_profile);
+    	    ImageView profile_r=(ImageView) rowView.findViewById(R.id.right_profile);
+    	    if(s.startsWith("1")){
+    	    	textView_l.setVisibility(View.VISIBLE);
+    	    	time_l.setVisibility(View.VISIBLE);
+    	    	profile_l.setVisibility(View.VISIBLE);
+    	    	textView_r.setVisibility(View.GONE);
+    	    	time_r.setVisibility(View.GONE);
+    	    	profile_r.setVisibility(View.GONE);
+    	    	textView_l.setText(values.get(position).substring(1,values.get(position).length()));
+    	    	time_l.setText(GetCurrTimeString());
+    	    }else{
+    	    	textView_r.setVisibility(View.VISIBLE);
+    	    	time_r.setVisibility(View.VISIBLE);
+    	    	profile_r.setVisibility(View.VISIBLE);
+    	    	textView_l.setVisibility(View.GONE);
+    	    	time_l.setVisibility(View.GONE);
+    	    	profile_l.setVisibility(View.GONE);
+    	    	textView_r.setText(values.get(position));
+    	    	time_r.setText(GetCurrTimeString());
+    	    }
+    
+    	    return rowView;
+    	  }
+    }
+    public static String GetCurrTimeString(){
+    	Calendar date = Calendar.getInstance(Locale.KOREA);
+    	SimpleDateFormat formator = new SimpleDateFormat("hh:mm",Locale.KOREA);
+    	String result = "";
+    	switch(date.get(Calendar.AM_PM)){
+    		case Calendar.AM : result = "오전 ";break;
+    		case Calendar.PM : result = "오후 ";break;
+    	}
+    	result = result+formator.format(date.getTime());
+    	return result;	
+    }
+}
